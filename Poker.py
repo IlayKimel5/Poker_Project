@@ -1,9 +1,31 @@
 import random
 import copy
 
+# TODO: General Notes:
+# comments should be one line before the code, not in the same line. see below:
+# comment
+pass
+
+# you should seperate functional parts with a newline and put a short comment documenting what each part does for clearity
+
+# for easily renaming of a variables name (refactoring) right click on it refactor->rename or shift+F6
+
+
+
+
 all_cards = []  # a list of all the cards
+
+# TODO: variable names in python are written with Snake Case naming convention - https://en.wikipedia.org/wiki/Snake_case
+
+# e.g type_card instead of typecard
+
+# TODO: having descriptive names is preferable to comments when readable. consider a name like:
+# possible_card_types instead of type_card
 typecard = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']  # a list of the card types possible
 suit = [' spades', ' diamonds', ' hearts', ' clubs']  # a list of the card suits possible
+
+# TODO: change to a more pythonic way
+# you can create all_cards in one line (hint: use list comprehensions)
 for typec in typecard:  # creats the list all_cards
     for suitcard in suit:
         lentypec = len(typec)
@@ -15,14 +37,27 @@ for typec in typecard:  # creats the list all_cards
 def cards():
     # the output is a list of a random card (card_type and suit)
     # the output is a list of all cards possible
+    # TODO: It cant be both above, can't it? ^^
+
+    # TODO: h is non descriptive name, I can't understand what it represents without diving into your code. This should be avoided when possible
     h = 1
     card = 0
     while h > 0:
+        # TODO: consider representing a card as type other then string with easy acess to type and suit.
+        # TODO: I would suggest using a neat thing called namedtuple - https://docs.python.org/2/library/collections.html#collections.namedtuple
+
+        # TODO: reuse the previous list of available card types and suits
         rand_typecard = random.choice(
             ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'])  # random card type
         rand_suit = random.choice([' spades', ' diamonds', ' hearts', ' clubs'])  # selects a random suit for the card
         rand_typecard += rand_suit
         card = rand_typecard
+
+        # TODO: I may be missing somethign here, but I think your entire function is too complex. check out the following lines
+        # card = random.choice(all_cards)
+        # all_cards.remove(card)
+        # return card
+
         for i in all_cards:
             if i == card:
                 all_cards.remove(i)
@@ -36,6 +71,9 @@ def hand():
     l_hand = []
     # the input is the function card()
     # the output is a list of two cards
+
+    # TODO: use a list comprehension
+
     for i in range(5):
         l_hand.append(cards())
     return l_hand
