@@ -1,270 +1,214 @@
 import random
 import copy
+from collections import namedtuple
 
-# TODO: General Notes:
-# comments should be one line before the code, not in the same line. see below:
-# comment
-pass
-
-# you should seperate functional parts with a newline and put a short comment documenting what each part does for clearity
-
-# for easily renaming of a variables name (refactoring) right click on it refactor->rename or shift+F6
-
-
-
-
-all_cards = []  # a list of all the cards
-
-# TODO: variable names in python are written with Snake Case naming convention - https://en.wikipedia.org/wiki/Snake_case
-
-# e.g type_card instead of typecard
-
-# TODO: having descriptive names is preferable to comments when readable. consider a name like:
-# possible_card_types instead of type_card
-typecard = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']  # a list of the card types possible
-suit = [' spades', ' diamonds', ' hearts', ' clubs']  # a list of the card suits possible
-
-# TODO: change to a more pythonic way
-# you can create all_cards in one line (hint: use list comprehensions)
-for typec in typecard:  # creats the list all_cards
-    for suitcard in suit:
-        lentypec = len(typec)
-        typec += suitcard
-        all_cards.append(typec)
-        typec = typec[0:lentypec]
+possible_card_types = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+possible_suits = ['spades', 'diamonds', 'hearts', 'clubs']
+all_cards = [(type_c, suit_card) for type_c in possible_card_types for suit_card in possible_suits]
 
 
 def cards():
     # the output is a list of a random card (card_type and suit)
-    # the output is a list of all cards possible
-    # TODO: It cant be both above, can't it? ^^
-
-    # TODO: h is non descriptive name, I can't understand what it represents without diving into your code. This should be avoided when possible
-    h = 1
-    card = 0
-    while h > 0:
-        # TODO: consider representing a card as type other then string with easy acess to type and suit.
-        # TODO: I would suggest using a neat thing called namedtuple - https://docs.python.org/2/library/collections.html#collections.namedtuple
-
-        # TODO: reuse the previous list of available card types and suits
-        rand_typecard = random.choice(
-            ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'])  # random card type
-        rand_suit = random.choice([' spades', ' diamonds', ' hearts', ' clubs'])  # selects a random suit for the card
-        rand_typecard += rand_suit
-        card = rand_typecard
-
-        # TODO: I may be missing somethign here, but I think your entire function is too complex. check out the following lines
-        # card = random.choice(all_cards)
-        # all_cards.remove(card)
-        # return card
-
-        for i in all_cards:
-            if i == card:
-                all_cards.remove(i)
-                h -= 1
-        if h >= 1:
-            card = 0
+    card = namedtuple('card', ['card_type', 'suit_type'])
+    card_choice = random.choice(all_cards)
+    card = card(card_choice[0], card_choice[1])
+    all_cards.remove(card_choice)
     return card
 
 
 def hand():
-    l_hand = []
     # the input is the function card()
     # the output is a list of two cards
-
-    # TODO: use a list comprehension
-
-    for i in range(5):
-        l_hand.append(cards())
+    l_hand = [cards() for i in range(5)]
     return l_hand
 
 
 def hand_big_to_small(l_hand):
     # the input is a hand
     # the output is the hand from biggest to smallest
-    # an example of a hand - Hand = ['Q hearts', 'K spades']
-    c = 10
-    # Hand()
-    while c == 10:
-        old = copy.copy(l_hand)
+    while True:
+        old_hand = copy.copy(l_hand)
         for card in l_hand[0:len(l_hand) - 1]:
-            a, b = ord(card[0]), ord(l_hand[l_hand.index(card) + 1][0])
-            if a == 65:
-                a = 83
-            elif b == 65:
-                b = 83
-            if a == 49:
-                a = 70
-            elif b == 49:
-                b = 70
-            if a == 75:
-                a = 82
-            elif b == 75:
-                b = 82
-            if a < b:
-                newordercard = l_hand[l_hand.index(card) + 1]
+            first_card_size, second_card_size = ord(card[0][0]), ord(l_hand[l_hand.index(card) + 1][0][0])
+            if first_card_size == 65:
+                first_card_size = 83
+            elif second_card_size == 65:
+                second_card_size = 83
+            if first_card_size == 49:
+                first_card_size = 70
+            elif second_card_size == 49:
+                second_card_size = 70
+            if first_card_size == 75:
+                first_card_size = 82
+            elif second_card_size == 75:
+                second_card_size = 82
+            if first_card_size < second_card_size:
+                new_order_card = l_hand[l_hand.index(card) + 1]
                 l_hand[l_hand.index(card) + 1] = card
-                l_hand[l_hand.index(card)] = newordercard
-        if old == l_hand:
-            c = 0
+                l_hand[l_hand.index(card)] = new_order_card
+        if old_hand == l_hand:
+            break
     return l_hand
 
 
 def is_pair(l_hand):
     # the input is a list of a hand
     # the output if you have a pair or not
-    # An example of an hand -l_hand = ['J spades', '9 diamonds', '10 spades', '10 diamonds', '9 spades']
-    pairt = 0
-    for card in hand_big_to_small(l_hand):
+    hand_big_to_small(l_hand)
+    for card in l_hand:
         pair = 0
         for i in range(0, len(l_hand)):
-            if card[0:2] == l_hand[i][0:2]:  # Checks if first char of card is the same the first char of the other card
+            # if the suit_type of the card is the same as the suit_type of the other card
+            if card.card_type == l_hand[i].card_type:
                 pair += 1
         if pair >= 2:
-            pairt = ['pair', card[0:2]]
-            return pairt
-        else:
-            pairt = ['no pair']
-    return pairt
+            return ['pair', card.card_type]
+    return ['no pair']
 
 
 def is_three_of_a_kind(l_hand):
     # the input is a list of a hand
     # the output if you have a three of a kind or not
-    # An example of an hand - Hand=['9 diamonds','A spades','A diamonds','A clubs']
-    for card in hand_big_to_small(l_hand):
+    hand_big_to_small(l_hand)
+    for card in l_hand:
         three = 0
-        for i in range(0, len(l_hand)):  # Checks if first char of the card is same as the first char in the other cards
-            if card[0:2] == l_hand[i][0:2]:
+        # if the suit_type of the card is the same as the suit_type of the other card
+        for i in range(0, len(l_hand)):
+            if card.card_type == l_hand[i].card_type:
                 three += 1
         if three >= 3:
-            print ['three of a kind', card[0:2]]
-        else:
-            return ['no three of a kind']
+            return ['three of a kind', card.card_type]
+    return ['no three of a kind']
 
 
 def is_four_of_a_kind(l_hand):
     # the input is a list of a hand
     # the output if you have a four of a kind or not
-    # An example of an hand - Hand=['9 diamonds','A spades','A diamonds','A clubs','A hearts']
-    for card in hand_big_to_small(l_hand):
+    hand_big_to_small(l_hand)
+    for card in l_hand:
         four = 0
-        for i in range(0, len(l_hand)):  # Checks if first char of the card is same as the first char in the other cards
-            if card[0:2] == l_hand[i][0:2]:
+        # if the suit_type of the card is the same as the suit_type of the other card
+        for i in range(0, len(l_hand)):
+            if card.card_type == l_hand[i].card_type:
                 four += 1
         if four >= 4:
-            print ['four of a kind', card[0:2]]
+            return ['four of a kind', card.card_type]
+    return ['no four of a kind']
 
 
 def is_flush(l_hand):
     # the input is a list of a hand
     # the output if you have a flush or not
-    # An example of an hand -hand = ['9 diamonds', 'A diamonds', '8 diamonds', '10 diamonds', '2 diamonds', '5 spades']
     hand_big_to_small(l_hand)
-    start = 2
-    start2 = 2
     for card in l_hand:
         flush = 0
-        for i in range(0, len(l_hand)):  # Checks if first char of the card is same as the first char in the other cards
-            if card[0:2] == '10':
-                start = 3
-            elif l_hand[i][0:2] == '10':
-                start2 = 3
-            if card[start:len(card) + 1] == l_hand[i][start2:len(l_hand[i]) + 1]:
+        for i in range(0, len(l_hand)):
+            # Checks if the suit_type of the card is same as the suit_type of the other cards
+            if card.suit_type == l_hand[i].suit_type:
                 flush += 1
-                print flush
-                start2 = 2
-                start = 2
-        if flush >= 5:
-            print ['flush', l_hand[0][0:2]]
+            if flush >= 5:
+                for k in range(3):
+                    if l_hand[k].suit_type == card.suit_type:
+                        print ['flush', l_hand[k].card_type, l_hand[k].suit_type]
+    return ['no flush']
 
 
 def is_straight(l_hand):
     # the input is a list of a hand
     # the output if you have a straight or not
-    # An example of an hand - hand = ['A diamonds', 'Q diamonds', '7 diamonds', 'J diamonds', 'K diamonds', '10 spades']
+    backwards = 3
     hand_big_to_small(l_hand)
     straight = 1
-    for card in l_hand[0:len(l_hand) - 1]:  # Check if first char of card is bigger by one then first char of other card
-        a, b = card[0], l_hand[l_hand.index(card) + 1][0]
-        if a == 'A':
-            a = 1
-        elif b == 'A':
-            b = 1
-        if a == 'K':
-            a = 13
-        elif b == 'K':
-            b = 13
-        if a == 'Q':
-            a = 12
-        elif b == 'Q':
-            b = 12
-        if a == 'J':
-            a = 11
-        elif b == 'J':
-            b = 11
-        if a == '1':
-            a = 10
-        elif b == '1':
-            b = 10
-        a = int(a)
-        b = int(b)
-        if a == b + 1:
+    for card in l_hand[0:len(l_hand) - 1]:
+        first_card_type, second_card_type = card.card_type, l_hand[l_hand.index(card) + 1].card_type
+        if first_card_type == 'A':
+            first_card_type = 14
+        if second_card_type == 'A':
+            second_card_type = 14
+        if first_card_type == 'K':
+            first_card_type = 13
+        if second_card_type == 'K':
+            second_card_type = 13
+        if first_card_type == 'Q':
+            first_card_type = 12
+        if second_card_type == 'Q':
+            second_card_type = 12
+        if first_card_type == 'J':
+            first_card_type = 11
+        if second_card_type == 'J':
+            second_card_type = 11
+        first_card_type = int(first_card_type)
+        second_card_type = int(second_card_type)
+        # Check if the card_type of the card is bigger by one then the card_type of the other card
+        if first_card_type == second_card_type + 1:
             straight += 1
-            print straight
-        elif a + 12 == b:
-            straight += 1
+            if second_card_type == 2:
+                if l_hand[0].card_type == 'A':
+                    straight += 1
+        elif first_card_type == second_card_type:
+            straight = straight
+            backwards += 1
+        else:
+            straight = 1
         if straight >= 5:
-            return ['straight', l_hand[0][0:2]]
+            if second_card_type == 2:
+                backwards -= 1
+                high_card = l_hand[l_hand.index(card) - backwards].card_type
+                return ['straight', high_card]
+            else:
+                high_card = l_hand[l_hand.index(card) - backwards].card_type
+                return ['straight', high_card]
+    return ['No straight']
 
 
 def is_two_pair(l_hand):
     # the input is a list of a hand
     # the output if you have two pairs or not
-    # An example of an hand - l_hand=['J spades', '9 diamonds', '10 spades', '10 diamonds', '9 spades']
-    handcheck = copy.copy(l_hand)
+    hand_copy = copy.copy(l_hand)
     hand_big_to_small(l_hand)
-    hand_big_to_small(handcheck)
-    if_pair = is_pair(handcheck)
-    if if_pair[0] == 'pair':
-        pair1 = copy.copy(is_pair(handcheck)[1])
-        for card in handcheck:
-            if card[0] == is_pair(handcheck)[1][0]:
-                handcheck.remove(handcheck[handcheck.index(card) + 1])
-                handcheck.remove(card)
-        if_pair2 = is_pair(handcheck)
-        if if_pair2[0] == 'pair':
-            pair2 = copy.copy(is_pair(handcheck)[1])
-            if pair1 != pair2:
-                twopairt = ['Two pair', str(pair1), str(pair2)]
-                return twopairt
+    hand_big_to_small(hand_copy)
+    if_first_pair = is_pair(hand_copy)
+    if if_first_pair[0] == 'pair':
+        first_pair = copy.copy(is_pair(hand_copy)[1])
+        for card in hand_copy:
+            if card.card_type == is_pair(hand_copy)[1]:
+                hand_copy.remove(hand_copy[hand_copy.index(card) + 1])
+                hand_copy.remove(card)
+                break
+        if_second_pair = is_pair(hand_copy)
+        if if_second_pair[0] == 'pair':
+            second_pair = copy.copy(is_pair(hand_copy)[1])
+            if first_pair != second_pair:
+                return ['Two pair', str(first_pair), str(second_pair)]
+    return ['No two pair', 'no', 'no']
 
 
 def full_house(l_hand):
     # the input is a list of a hand
     # the output if you have a full house or not
-    # An example of an hand -hand=['k spades','Q diamonds','Q hearts','10 diamonds','Q spades','10 hearts']
-    handcheck = copy.copy(l_hand)
+    hand_copy_full_house = copy.copy(l_hand)
     hand_big_to_small(l_hand)
-    hand_big_to_small(handcheck)
-    if is_two_pair(handcheck)[0] == 'Two pair':
-        for card in handcheck:
-            pair1f = is_two_pair(handcheck)[1]
-            pair2f = is_two_pair(handcheck)[2]
-            if card[0] == is_two_pair(handcheck)[1][0]:
-                handcheck.remove(handcheck[handcheck.index(card) + 1])
-                handcheck.remove(card)
-            if card[0] == is_two_pair(handcheck)[2][0]:
-                handcheck.remove(handcheck[handcheck.index(card) + 1])
-                handcheck.remove(card)
-        for card in handcheck:
-            if card[0] == pair1f[0]:
-                print ['full house', str(pair1f), str(pair2f)]
-            if card[0] == pair2f[0]:
-                print ['full house', str(pair2f), str(pair1f)]
+    hand_big_to_small(hand_copy_full_house)
+    if is_three_of_a_kind(l_hand)[0] == 'three of a kind':
+        full_house_three = is_three_of_a_kind(l_hand)[1]
+        for card in l_hand:
+            if is_three_of_a_kind(l_hand)[1] == card.card_type:
+                hand_copy_full_house.remove(card)
+        if is_pair(hand_copy_full_house)[0] == 'pair':
+            full_house_pair = is_pair(hand_copy_full_house)[1]
+            print ['full house', str(full_house_three), str(full_house_pair)]
+    return ['no full house']
 
 
-is_two_pair(hand())
+def straight_flush(l_hand):
+    # the input is a list of a hand
+    # the output if you have a straight-flush or not
+    hand_big_to_small(l_hand)
+    if is_flush(l_hand)[0] == 'flush' and is_straight(l_hand)[0] == 'straight':
+        flush_color = [card for card in l_hand if card.suit_type == is_flush(l_hand)[2]]
+        if is_straight(flush_color)[0] == 'straight':
+            return ['straight-flush', is_straight(flush_color)[1]]
+    return ['no straight-flush']
 
 
 class Player:
@@ -277,3 +221,4 @@ class Player:
         # Player(100,Hand(),True)
         # An example of a class
         # Main script - P0ker GaM3
+
